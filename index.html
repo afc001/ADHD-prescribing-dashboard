@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADHD Prescribing in England — NHS Data Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+<style>
+  :root {
+    --red:       #c41e23;
+    --ink:       #1a1a1a;
+    --ink-mid:   #3d3d3d;
+    --ink-light: #6b6b6b;
+    --rule:      #d4c9b8;
+    --bg:        #faf8f4;
+    --blue:      #1d5fa8;
+    --orange:    #d4660a;
+    --green:     #2a7a4b;
+    --charcoal:  #2d2d2d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .masthead {
+    border-top: 4px solid var(--red);
+    border-bottom: 1px solid var(--rule);
+    padding: 1.75rem 0 1.25rem;
+    background: var(--bg);
+  }
+
+  .masthead-inner {
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .kicker {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 0.6rem;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.01em;
+  }
+
+  .standfirst {
+    font-family: 'Source Serif 4', serif;
+    font-size: 1rem;
+    font-weight: 300;
+    color: var(--ink-mid);
+    line-height: 1.65;
+    max-width: 620px;
+    margin-bottom: 1rem;
+  }
+
+  .byline { font-size: 12px; color: var(--ink-light); }
+  .byline strong { color: var(--ink-mid); font-weight: 500; }
+
+  .content {
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 0 1.5rem 3rem;
+  }
+
+  .chart-block {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .chart-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--ink);
+    margin-bottom: 0.35rem;
+  }
+
+  .chart-deck {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.875rem;
+    color: var(--ink-light);
+    font-weight: 300;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+
+  canvas { display: block; width: 100% !important; }
+
+  .chart-source {
+    font-size: 11px;
+    color: var(--ink-light);
+    margin-top: 0.5rem;
+    padding-top: 0.4rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .chart-note {
+    font-size: 11px;
+    color: #aaa;
+    font-style: italic;
+    margin-top: 0.35rem;
+  }
+
+  #chart-age {
+    max-height: 380px;
+  }
+
+  #chart-regional {
+    max-height: 800px;
+  }
+  .error-msg {
+    background: #fff5f5;
+    border-left: 3px solid var(--red);
+    padding: 0.75rem 1rem;
+    font-size: 13px;
+    color: var(--ink-mid);
+    margin-bottom: 0.75rem;
+  }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 1.5rem;
+    max-width: 740px;
+    margin: 0 auto;
+  }
+
+  footer p { font-size: 11.5px; color: var(--ink-light); line-height: 1.7; }
+  footer p + p { margin-top: 0.4rem; }
+  footer strong { color: var(--ink-mid); }
+</style>
+</head>
+
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <p class="kicker">NHS England · Data Analysis</p>
+    <h1>The amphetamine epidemic:<br>ADHD prescribing in England</h1>
+    <p class="standfirst">The number of children and adults receiving stimulant medication for ADHD has risen dramatically over the past decade. NHS data reveal who is being prescribed, where, and how that picture is changing.</p>
+    <p class="byline"><strong>Adam Chidlow</strong> &nbsp;·&nbsp; Data: NHS Business Services Authority; Office for National Statistics &nbsp;·&nbsp; <span id="updated-date"></span></p>
+  </div>
+</header>
+
+<main class="content">
+
+  <div class="chart-block">
+    <h2 class="chart-title">For the first time, more adults than children are being prescribed ADHD drugs</h2>
+    <p class="chart-deck">Identified patients receiving CNS stimulants in England by financial year. Adults first outnumbered children in 2022/23, and the gap has widened every year since.</p>
+    <canvas id="chart-trend" height="300"></canvas>
+    <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health, 2015/16–2024/25</p>
+  </div>
+
+  <div class="chart-block">
+    <h2 class="chart-title">Covid hit children's prescriptions hard, while adults' barely paused</h2>
+    <p class="chart-deck">Year-on-year growth rate by age group (identified patients only, 17 and under; 18 and over). Children's prescribing fell sharply in 2020/21 and has never fully recovered its pre-pandemic trajectory. Adult prescribing dipped briefly then surged, and still sustains 25% year-on-year growth.</p>
+    <canvas id="chart-yoy" height="260"></canvas>
+    <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health, 2015/16–2024/25</p>
+  </div>
+
+  <div class="chart-block">
+    <h2 class="chart-title">Amphetamine-class drugs are now mainstream NHS medication</h2>
+    <p class="chart-deck">Monthly items dispensed by drug type. Methylphenidate (a stimulant related to amphetamine) has long dominated, but lisdexamfetamine, a true amphetamine prodrug, has grown faster than any other ADHD drug since its UK approval. Total stimulant prescriptions are now over 300,000 items per month.</p>
+    <canvas id="chart-drugs" height="300"></canvas>
+    <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health, monthly chemical substance data</p>
+  </div>
+
+<div class="chart-block">
+  <h2 class="chart-title">Women in their thirties are the fastest-growing age group, but teenage boys remain the largest</h2>
+  <p class="chart-deck">Male patients aged 10–14 remain the single largest group by far, reflecting decades of ADHD being diagnosed predominantly in boys, but the fastest growth is among women aged 30–44. Toggle between current patient numbers and five-year growth.</p>
+  <canvas id="chart-age" height="380"></canvas>
+  <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health, Age Band and Gender tab</p>
+  <p class="chart-note">Notes: patient counts from age/gender cross-tabulation may slightly overestimate totals — see NHSBSA methodology. Data for patients at 80+ years old excluded due to small sample size.</p>
+</div>
+
+<div class="chart-block">
+  <h2 class="chart-title">Prescribing rates vary dramatically by region</h2>
+  <p class="chart-deck">Some areas have seen ADHD prescribing more than triple since 2015/16 while others have grown far more slowly. Toggle between growth rate and population-standardised totals. Hover to see both.</p>
+  <canvas id="chart-regional" height="560"></canvas>
+  <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health; ONS Mid-year Population Estimates</p>
+  <p class="chart-note" id="regional-note"></p>
+</div>
+
+<div class="chart-block" id="scatter-block">
+  <h2 class="chart-title">Scatter: % change vs per 100,000 <span style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:400;color:var(--ink-light);">— analytical view, remove before publishing</span></h2>
+  <p class="chart-deck">Each dot is an ICB. Red dots have the highest rank divergence between the two metrics — ICBs that look very different depending on which measure you use.</p>
+  <canvas id="chart-scatter" height="440"></canvas>
+  <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health; ONS Mid-year Population Estimates</p>
+</div>
+
+</main>
+
+<footer>
+  <p><strong>Data:</strong> NHS Business Services Authority, <em>Medicines Used in Mental Health, England 2015/16–2024/25</em>, CNS Stimulants and Drugs Used for ADHD summary tables; Office for National Statistics, <em>Health geographies population estimates, Mid-2011 to mid-2022: Integrated Care Boards, 2024 geography edition</em> and <em>Mid-2022 revised (Nov 2024) to mid-2024: Integrated Care Boards, 2024 geography edition</em> Used for regional population standardisation</p>
+  <p><strong>Notes:</strong> Figures relate to identified patients only unless otherwise stated. The 15–19 age band straddles the children/adult threshold. Regional percentage changes calculated from 2015/16 baseline.</p>
+  <p>Analysis: Adam Chidlow</p>
+</footer>
+
+<script>
+// ── UPDATE THIS PATH ──────────────────────────────────────────────────────────
+const DATA_DIR = '../Data/nhsbsa_processed/';
+
+document.getElementById('updated-date').textContent =
+  new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
+
+const RED      = '#c41e23';
+const BLUE     = '#1d5fa8';
+const ORANGE   = '#d4660a';
+const GREEN    = '#2a7a4b';
+const CHARCOAL = '#2d2d2d';
+const RULE     = '#d4c9b8';
+
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.font.size   = 12;
+Chart.defaults.color       = '#6b6b6b';
+Chart.defaults.plugins.legend.labels.boxWidth      = 12;
+Chart.defaults.plugins.legend.labels.padding       = 16;
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.tooltip.backgroundColor     = '#1a1a1a';
+Chart.defaults.plugins.tooltip.titleFont  = {family:"'Playfair Display',serif", size:13};
+Chart.defaults.plugins.tooltip.bodyFont   = {family:"'DM Sans',sans-serif", size:12};
+Chart.defaults.plugins.tooltip.padding    = 10;
+Chart.defaults.plugins.tooltip.cornerRadius = 2;
+
+function gridOpts() { return { color: RULE, lineWidth: 0.8, drawTicks: false }; }
+function axisOpts(title) {
+  return {
+    grid: gridOpts(),
+    border: { color: RULE },
+    ticks: { padding: 8 },
+    ...(title ? { title:{ display:true, text:title, color:'#6b6b6b', font:{size:11} } } : {})
+  };
+}
+
+function loadCSV(filename) {
+  return new Promise((resolve, reject) => {
+    Papa.parse(DATA_DIR + filename, {
+      download: true, header: true, dynamicTyping: true, skipEmptyLines: true,
+      complete: r => resolve(r.data),
+      error:    e => reject(e)
+    });
+  });
+}
+
+function showError(canvasId, message) {
+  const canvas = document.getElementById(canvasId);
+  const div = document.createElement('div');
+  div.className = 'error-msg';
+  div.innerHTML = `<strong>Could not load data:</strong> ${message}<br>
+    <small>Check DATA_DIR path at top of script and serve via <code>python -m http.server 8000</code></small>`;
+  canvas.parentElement.insertBefore(div, canvas);
+  canvas.style.display = 'none';
+}
+
+// ── Chart 1: Trend ────────────────────────────────────────────────────────────
+async function buildTrendChart() {
+  try {
+    const raw   = await loadCSV('nhsbsa_children_trend.csv');
+    const years = [...new Set(raw.map(r => r.financial_year))].sort();
+
+    const children = years.map(y => {
+      const r = raw.find(d => d.financial_year === y && d.age_group === 'children');
+      return r ? Math.round(r.identified_patients / 1000) : null;
+    });
+    const adults = years.map(y => {
+      const r = raw.find(d => d.financial_year === y && d.age_group === 'adults');
+      return r ? Math.round(r.identified_patients / 1000) : null;
+    });
+
+    new Chart(document.getElementById('chart-trend'), {
+      type: 'line',
+      data: {
+        labels: years.map(y => y.replace('/20','/')),
+        datasets: [
+          { label:'Children (17 and under)', data:children,
+            borderColor:RED,      borderWidth:2.5, pointRadius:3, pointHoverRadius:5, tension:0.3, fill:false },
+          { label:'Adults (18 and over)',    data:adults,
+            borderColor:BLUE,     borderWidth:2.5, pointRadius:3, pointHoverRadius:5, tension:0.3, fill:false },
+        ]
+      },
+      options: {
+        responsive:true,
+        interaction:{ mode:'index', intersect:false },
+        plugins:{
+          legend:{ position:'top', align:'start' },
+          tooltip:{ callbacks:{ label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toLocaleString()}k` } }
+        },
+        scales:{
+          x:{ ...axisOpts(), grid:{display:false} },
+          y:{ ...axisOpts('Patients / items (thousands)'), beginAtZero:true,
+              ticks:{ callback: v => v+'k', padding:8 } }
+        }
+      }
+    });
+  } catch(e) { showError('chart-trend', e.message); }
+}
+
+// ── Chart 2: Year-on-year % change ────────────────────────────────────────────
+async function buildYoYChart() {
+  try {
+    const raw   = await loadCSV('nhsbsa_children_trend.csv');
+    const years = [...new Set(raw.map(r => r.financial_year))].sort();
+
+    function yoy(group) {
+      return years.map((y, i) => {
+        if (i === 0) return null;
+        const prev = raw.find(d => d.financial_year === years[i-1] && d.age_group === group);
+        const curr = raw.find(d => d.financial_year === y           && d.age_group === group);
+        if (!prev || !curr || !prev.identified_patients) return null;
+        return +((( curr.identified_patients - prev.identified_patients)
+                    / prev.identified_patients) * 100).toFixed(1);
+      });
+    }
+
+    new Chart(document.getElementById('chart-yoy'), {
+      type:'line',
+      data:{
+        labels: years.slice(1).map(y => y.replace('/20','/')),
+        datasets:[
+          { label:'Children', data:yoy('children').slice(1),
+            borderColor:RED,  borderWidth:2.5, pointRadius:3, pointHoverRadius:5, tension:0.3, fill:false },
+          { label:'Adults',   data:yoy('adults').slice(1),
+            borderColor:BLUE, borderWidth:2.5, pointRadius:3, pointHoverRadius:5, tension:0.3, fill:false },
+        ]
+      },
+      options:{
+        responsive:true,
+        interaction:{ mode:'index', intersect:false },
+        plugins:{
+          legend:{ position:'top', align:'start' },
+          tooltip:{ callbacks:{ label: ctx => {
+            const v = ctx.parsed.y;
+            return ` ${ctx.dataset.label}: ${v > 0 ? '+' : ''}${v}%`;
+          }}}
+        },
+        scales:{
+          x:{ ...axisOpts(), grid:{display:false} },
+          y:{ ...axisOpts('Year-on-year change (%)'),
+              ticks:{ callback: v => v+'%', padding:8 } }
+        }
+      }
+    });
+  } catch(e) { showError('chart-yoy', e.message); }
+}
+
+// ── Chart 3: Drug breakdown ───────────────────────────────────────────────────
+async function buildDrugsChart() {
+  try {
+    const raw   = await loadCSV('nhsbsa_drug_breakdown_monthly.csv');
+    const drugs = [...new Set(raw.map(r => r.drug))].sort();
+    const dates = [...new Set(raw.map(r => r.date))].sort();
+    const sampled = dates.filter((_, i) => i % 3 === 0);
+
+    const colours = { methylphenidate:RED, lisdexamfetamine:BLUE, atomoxetine:ORANGE, dexamfetamine:GREEN };
+    const drugLabels = {
+      methylphenidate:  'Methylphenidate (Ritalin)',
+      lisdexamfetamine: 'Lisdexamfetamine (Vyvanse)',
+      atomoxetine:      'Atomoxetine (Strattera)',
+      dexamfetamine:    'Dexamfetamine (Amfexa)',
+    };
+
+    const datasets = drugs.map(drug => ({
+      label: drugLabels[drug] || drug,
+      data:  sampled.map(d => { const r = raw.find(row => row.date===d && row.drug===drug); return r ? r.total_items : null; }),
+      borderColor: colours[drug] || CHARCOAL,
+      borderWidth: 2,
+      pointRadius: 0, pointHoverRadius: 4,
+      tension: 0.3, fill: false,
+    }));
+
+    new Chart(document.getElementById('chart-drugs'), {
+      type:'line',
+      data:{
+        labels: sampled.map(d => new Date(d).toLocaleDateString('en-GB',{month:'short',year:'2-digit'})),
+        datasets
+      },
+      options:{
+        responsive:true,
+        interaction:{ mode:'index', intersect:false },
+        plugins:{
+          legend:{ position:'top', align:'start' },
+          tooltip:{ callbacks:{ label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toLocaleString()} items` } }
+        },
+        scales:{
+          x:{ ...axisOpts(), grid:{display:false}, ticks:{maxTicksLimit:12, maxRotation:0} },
+          y:{ ...axisOpts('Items dispensed'), beginAtZero:true,
+              ticks:{ callback: v => v>=1000 ? (v/1000).toFixed(0)+'k' : v, padding:8 } }
+        }
+      }
+    });
+  } catch(e) { showError('chart-drugs', e.message); }
+}
+
+// ── Chart 4: Age/gender pyramid ───────────────────────────────────────────────
+async function buildAgeChart() {
+  try {
+    const raw = await loadCSV('nhsbsa_age_gender_pyramid.csv');
+
+    const allBands = ['0 to 4','5 to 9','10 to 14','15 to 19','20 to 24','25 to 29',
+                      '30 to 34','35 to 39','40 to 44','45 to 49','50 to 54','55 to 59',
+                      '60 to 64','65 to 69','70 to 74','75 to 79'];
+
+    const latestYear   = raw[0].latest_year;
+    const baselineYear = raw[0].baseline_year;
+
+    // Filter out bands where either gender has <100 patients in baseline year
+    const validBands = allBands.filter(band => {
+      const f = raw.find(r => r.age_band === band && r.gender === 'Female');
+      const m = raw.find(r => r.age_band === band && r.gender === 'Male');
+      return f && m
+        && (f.identified_patients_5y_ago || 0) >= 100
+        && (m.identified_patients_5y_ago || 0) >= 100;
+    });
+
+    let pyramidChart = null;
+
+    // ── Toggle buttons ───────────────────────────────────────────────────
+    const wrap      = document.getElementById('chart-age').parentElement;
+    const toggleDiv = document.createElement('div');
+    toggleDiv.style.cssText = 'display:flex;gap:0;margin-bottom:1rem;';
+    toggleDiv.innerHTML = `
+      <button id="btn-age-growth"
+        style="padding:0.35rem 0.9rem;font-size:12px;font-family:'DM Sans',sans-serif;
+               border:1px solid ${RED};cursor:pointer;border-radius:2px 0 0 2px;
+               background:${RED};color:#fff;font-weight:500;">
+        5-year growth</button>
+      <button id="btn-age-raw"
+        style="padding:0.35rem 0.9rem;font-size:12px;font-family:'DM Sans',sans-serif;
+               border:1px solid ${RED};border-left:none;cursor:pointer;border-radius:0 2px 2px 0;
+               background:#fff;color:${RED};font-weight:500;">
+        ${latestYear} patients</button>`;
+    wrap.insertBefore(toggleDiv, document.getElementById('chart-age'));
+
+    function buildPyramid(mode) {
+      if (pyramidChart) pyramidChart.destroy();
+
+      const bands = mode === 'raw' ? allBands : validBands;
+      const isRaw = mode === 'raw';
+
+      const femaleVals = bands.map(band => {
+        const f = raw.find(r => r.age_band === band && r.gender === 'Female');
+        return f ? (isRaw ? f.identified_patients : f.growth_5y_pct) : null;
+      });
+      const maleVals = bands.map(band => {
+        const m = raw.find(r => r.age_band === band && r.gender === 'Male');
+        return m ? (isRaw ? m.identified_patients : m.growth_5y_pct) : null;
+      });
+
+      // Fixed axis limits
+      const xMin  = isRaw ? -60000  : -500;
+      const xMax  = isRaw ?  60000  :  500;
+      const stepSize = isRaw ? 20000 : 100;
+
+      pyramidChart = new Chart(document.getElementById('chart-age'), {
+        type: 'bar',
+        data: {
+          labels: bands,
+          datasets: [
+            {
+              label: 'Female',
+              data: femaleVals.map(v => v !== null ? -Math.abs(v) : null),
+              backgroundColor: ORANGE + 'cc',
+              borderColor: ORANGE,
+              borderWidth: 1,
+              borderRadius: 2,
+              barThickness: 10,
+            },
+            {
+              label: 'Male',
+              data: maleVals.map(v => v !== null ? Math.abs(v) : null),
+              backgroundColor: BLUE + 'cc',
+              borderColor: BLUE,
+              borderWidth: 1,
+              borderRadius: 2,
+              barThickness: 10,
+            }
+          ],
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          animation: { duration: 350 },
+          layout: {
+          padding: { top: 5, bottom: 5 }
+          },
+          plugins: {
+            legend: { position: 'top', align: 'start' },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              callbacks: {
+                title: ctx => `Age ${ctx[0].label}`,
+                label: ctx => {
+                  const i    = ctx.dataIndex;
+                  const val  = ctx.dataset.label === 'Female' ? femaleVals[i] : maleVals[i];
+                  const name = ctx.dataset.label;
+                  if (val === null) return null;
+                  return isRaw
+                    ? ` ${name}: ${Math.abs(val).toLocaleString()} patients`
+                    : ` ${name}: +${Math.abs(val).toFixed(1)}%`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ...axisOpts(isRaw
+                ? `Identified patients (${latestYear})`
+                : `% growth, ${baselineYear} → ${latestYear}`),
+              stacked: false,
+              min: xMin,
+              max: xMax,
+              ticks: {
+                stepSize,
+                callback: v => isRaw
+                  ? (Math.abs(v) / 1000).toFixed(0) + 'k'
+                  : Math.abs(v) + '%',
+                padding: 8,
+              }
+            },
+            y: {
+              ...axisOpts(),
+              stacked: false,
+              grid: { display: false },
+              ticks: { padding: 4 },
+            }
+          },
+        }
+      });
+    }
+
+    function setAgeActive(mode) {
+      document.getElementById('btn-age-growth').style.background = mode === 'growth' ? RED : '#fff';
+      document.getElementById('btn-age-growth').style.color      = mode === 'growth' ? '#fff' : RED;
+      document.getElementById('btn-age-raw').style.background    = mode === 'raw'    ? RED : '#fff';
+      document.getElementById('btn-age-raw').style.color         = mode === 'raw'    ? '#fff' : RED;
+    }
+
+    document.getElementById('btn-age-growth').onclick = () => { setAgeActive('growth'); buildPyramid('growth'); };
+    document.getElementById('btn-age-raw').onclick    = () => { setAgeActive('raw');    buildPyramid('raw'); };
+
+    buildPyramid('growth');
+
+  } catch(e) { showError('chart-age', e.message); }
+}
+
+// ── Chart 5 & 6: Regional toggle + scatter ────────────────────────────────────
+async function buildRegionalCharts() {
+  try {
+    const rawPct = await loadCSV('nhsbsa_regional_annual.csv');
+    const rawStd = await loadCSV('nhsbsa_regional_standardised.csv');
+
+    const years    = [...new Set(rawPct.map(r => r.financial_year))].sort();
+    const baseline = years[0];
+    const latest   = years[years.length - 1];
+
+    function cleanName(name) {
+      return (name || '')
+        .replace(/\bNHS\b/gi, '')
+        .replace(/Integrated Care Board/gi, '')
+        .replace(/\bICB\b/gi, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    }
+
+    // ── Build unified dataset ────────────────────────────────────────────
+    const icbs = [...new Set(rawPct.map(r => r.icb_name))]
+                   .filter(n => n && !String(n).toLowerCase().includes('unknown'));
+
+    const allData = icbs.map(icb => {
+      const b = rawPct.find(r => r.financial_year === baseline && r.icb_name === icb);
+      const l = rawPct.find(r => r.financial_year === latest   && r.icb_name === icb);
+      const s = rawStd.find(r => r.financial_year === latest   && r.icb_name === icb);
+      if (!b || !l || !b.identified_patients || !s) return null;
+      return {
+        icb:     cleanName(icb),
+        icb_raw: icb,
+        pct:     Math.round(((l.identified_patients - b.identified_patients) / b.identified_patients) * 100),
+        per100k: +s.patients_per_100k,
+      };
+    }).filter(Boolean);
+
+    // Assign ranks
+    const byPct  = [...allData].sort((a, b) => b.pct    - a.pct);
+    const by100k = [...allData].sort((a, b) => b.per100k - a.per100k);
+    allData.forEach(d => {
+      d.pct_rank     = byPct.findIndex(x  => x.icb_raw === d.icb_raw) + 1;
+      d.per100k_rank = by100k.findIndex(x => x.icb_raw === d.icb_raw) + 1;
+    });
+
+    const n = allData.length;
+
+    // ── Lookup map for cross-metric tooltips (keyed by display label) ────
+    // Used by buildBarChart so whichever toggle is active, hover shows both.
+    const metricByLabel = {};
+    allData.forEach(d => {
+      metricByLabel[d.icb] = { pct: d.pct, per100k: d.per100k,
+                               pct_rank: d.pct_rank, per100k_rank: d.per100k_rank };
+    });
+    // Sentinel for the gap row — no tooltip entry needed (null data skips tooltip)
+
+    // ── Toggle buttons ───────────────────────────────────────────────────
+    const wrap      = document.getElementById('chart-regional').parentElement;
+    const toggleDiv = document.createElement('div');
+    toggleDiv.style.cssText = 'display:flex;gap:0;margin-bottom:1rem;';
+    toggleDiv.innerHTML = `
+      <button id="btn-pct"
+        style="padding:0.35rem 0.9rem;font-size:12px;font-family:'DM Sans',sans-serif;
+               border:1px solid ${RED};cursor:pointer;border-radius:2px 0 0 2px;
+               background:${RED};color:#fff;font-weight:500;">% change</button>
+      <button id="btn-100k"
+        style="padding:0.35rem 0.9rem;font-size:12px;font-family:'DM Sans',sans-serif;
+               border:1px solid ${BLUE};border-left:none;cursor:pointer;border-radius:0 2px 2px 0;
+               background:#fff;color:${BLUE};font-weight:500;">Totals per 100k</button>`;
+    wrap.insertBefore(toggleDiv, document.getElementById('chart-regional'));
+
+    let barChart = null;
+
+    // ── Bar chart (% change or per 100k) ─────────────────────────────────
+    function buildBarChart(mode) {
+      if (barChart) barChart.destroy();
+      document.getElementById('chart-regional').style.display = 'block';
+
+      let displayRows;
+
+      if (mode === 'pct') {
+        // Top 5 and bottom 5 only, sorted highest → lowest, with a null gap between
+        const top5    = byPct.slice(0, 5);
+        const bottom5 = byPct.slice(-5);           // already sorted desc, so last 5 = lowest
+        const GAP     = { icb: '', pct: null, per100k: null, _gap: true };
+        displayRows   = [...top5, GAP, ...bottom5];
+      } else {
+        // All regions for per 100k view
+        displayRows = by100k;
+      }
+
+      const labels = displayRows.map(d => d.icb);
+      const values = displayRows.map(d =>
+        d._gap ? null : (mode === 'pct' ? d.pct : d.per100k)
+      );
+      const colour = mode === 'pct' ? RED : BLUE;
+
+      // Per-bar colours: null (gap) bars are transparent
+      const bgColors     = displayRows.map(d => d._gap ? 'transparent' : colour + 'bb');
+      const borderColors = displayRows.map(d => d._gap ? 'transparent' : colour);
+
+      barChart = new Chart(document.getElementById('chart-regional'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: mode === 'pct'
+              ? `% change (${baseline} → ${latest})`
+              : `Patients per 100,000 (${latest})`,
+            data: values,
+            backgroundColor: bgColors,
+            borderColor:     borderColors,
+            borderWidth: 1,
+            borderRadius: 2,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 350 },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              // Skip tooltip entirely for the gap row (null value)
+              filter: item => item.raw !== null,
+              callbacks: {
+                title: ctx => ctx[0].label || '',
+                label: ctx => {
+                  const label = ctx.label;
+                  const m     = metricByLabel[label];
+                  if (!m) return '';
+                  // Always show both metrics, highlighting the active one first
+                  if (mode === 'pct') {
+                    return [
+                      ` % change: +${m.pct}% (rank #${m.pct_rank} of ${n})`,
+                      ` Per 100,000: ${m.per100k.toFixed(1)} (rank #${m.per100k_rank} of ${n})`,
+                    ];
+                  } else {
+                    return [
+                      ` Per 100,000: ${m.per100k.toFixed(1)} (rank #${m.per100k_rank} of ${n})`,
+                      ` % change: +${m.pct}% (rank #${m.pct_rank} of ${n})`,
+                    ];
+                  }
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ...axisOpts(mode === 'pct'
+                ? `% change, ${baseline} → ${latest}`
+                : `Identified patients per 100,000 (${latest})`),
+              min: 0,
+              ticks: {
+                callback: v => mode === 'pct' ? '+' + v + '%' : v,
+                padding: 8
+              }
+            },
+            y: {
+              ...axisOpts(),
+              grid: { display: false },
+              ticks: {
+                font: { size: 11 },
+                padding: 8,
+                // Suppress tick label for the gap row
+                callback: (val, index) => labels[index] === '' ? '' : labels[index],
+              }
+            }
+          }
+        }
+      });
+
+      if (mode === 'pct') {
+        const top    = byPct[0];
+        const bottom = byPct[byPct.length - 1];
+        document.getElementById('regional-note').textContent =
+          `Showing top 5 and bottom 5 ICBs by % change (${baseline} → ${latest}). ` +
+          `Highest: ${top.icb} (+${top.pct}%). Lowest: ${bottom.icb} (+${bottom.pct}%). ` +
+          `Hover shows both metrics.`;
+      } else {
+        const medianVal = by100k[Math.floor(by100k.length / 2)].per100k;
+        document.getElementById('regional-note').textContent =
+          `All ${n} ICBs sorted by rate. Median: ${medianVal.toFixed(1)} per 100,000. ` +
+          `Hover shows both metrics.`;
+      }
+    }
+
+    // ── Button active state ──────────────────────────────────────────────
+    function setActive(mode) {
+      document.getElementById('btn-pct').style.background  = mode === 'pct'  ? RED  : '#fff';
+      document.getElementById('btn-pct').style.color       = mode === 'pct'  ? '#fff' : RED;
+      document.getElementById('btn-100k').style.background = mode === '100k' ? BLUE : '#fff';
+      document.getElementById('btn-100k').style.color      = mode === '100k' ? '#fff' : BLUE;
+    }
+
+    window.switchMode = function(mode) {
+      setActive(mode);
+      buildBarChart(mode);
+    };
+
+    document.getElementById('btn-pct').onclick  = () => window.switchMode('pct');
+    document.getElementById('btn-100k').onclick = () => window.switchMode('100k');
+
+    buildBarChart('pct');
+
+    // ── Standalone scatter ───────────────────────────────────────────────
+    const scatterData = allData.map(d => ({
+      x: d.per100k, y: d.pct, label: d.icb,
+      pct_rank: d.pct_rank, per100k_rank: d.per100k_rank,
+      divergence: d.divergence,
+    }));
+
+    const topDivergers = new Set(
+      [...allData].sort((a,b) => b.divergence - a.divergence).slice(0,5).map(d => d.icb)
+    );
+    by100k.slice(0,3).forEach(d => topDivergers.add(d.icb));
+    byPct.slice(0,3).forEach(d  => topDivergers.add(d.icb));
+
+    const meanX     = scatterData.reduce((s,p) => s+p.x, 0) / n;
+    const meanY     = scatterData.reduce((s,p) => s+p.y, 0) / n;
+    const slope     = scatterData.reduce((s,p) => s+(p.x-meanX)*(p.y-meanY), 0) /
+                      scatterData.reduce((s,p) => s+(p.x-meanX)**2, 0);
+    const intercept = meanY - slope * meanX;
+    const xMin      = Math.min(...scatterData.map(p=>p.x));
+    const xMax      = Math.max(...scatterData.map(p=>p.x));
+
+    const labelPlugin = {
+      id: 'scatterLabels',
+      afterDatasetsDraw(ch) {
+        const c    = ch.ctx;
+        const meta = ch.getDatasetMeta(0);
+        c.save();
+        c.font         = "11px 'DM Sans',sans-serif";
+        c.fillStyle    = '#3d3d3d';
+        c.textBaseline = 'bottom';
+        meta.data.forEach((el, i) => {
+          if (!topDivergers.has(scatterData[i].label)) return;
+          const {x, y} = el.getProps(['x','y']);
+          c.fillText(scatterData[i].label, x+6, y-2);
+        });
+        c.restore();
+      }
+    };
+
+    new Chart(document.getElementById('chart-scatter'), {
+      type: 'scatter',
+      plugins: [labelPlugin],
+      data: {
+        datasets: [
+          {
+            label: 'ICB',
+            data: scatterData,
+            backgroundColor: scatterData.map(d => topDivergers.has(d.label) ? RED+'dd' : BLUE+'55'),
+            borderColor:     scatterData.map(d => topDivergers.has(d.label) ? RED : BLUE),
+            borderWidth: 1,
+            pointRadius:      scatterData.map(d => topDivergers.has(d.label) ? 6 : 4),
+            pointHoverRadius: 7,
+          },
+          {
+            label: 'Trend',
+            data: [{x:xMin, y:slope*xMin+intercept}, {x:xMax, y:slope*xMax+intercept}],
+            type: 'line',
+            borderColor: CHARCOAL+'55',
+            borderWidth: 1.5,
+            borderDash: [4,3],
+            pointRadius: 0,
+            fill: false,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            filter: item => item.datasetIndex === 0,
+            callbacks: {
+              title: ctx => ctx[0].raw.label,
+              label: ctx => [
+                ` Per 100,000: ${ctx.raw.x.toFixed(1)} (rank #${ctx.raw.per100k_rank})`,
+                ` % change: +${ctx.raw.y}% (rank #${ctx.raw.pct_rank})`,
+                ` Rank divergence: ${ctx.raw.divergence}`
+              ]
+            }
+          }
+        },
+        scales: {
+          x: { ...axisOpts(`Patients per 100,000 (${latest})`),  ticks:{padding:8} },
+          y: { ...axisOpts(`% change, ${baseline} → ${latest}`), ticks:{callback: v=>'+'+v+'%', padding:8} }
+        }
+      }
+    });
+
+  } catch(e) {
+    showError('chart-regional', e.message);
+    showError('chart-scatter',  e.message);
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+buildTrendChart();
+buildYoYChart();
+buildDrugsChart();
+buildAgeChart();
+buildRegionalCharts();
+</script>
+
+</body>
+</html>
