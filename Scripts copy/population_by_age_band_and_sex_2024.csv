@@ -1,0 +1,49 @@
+Area,Sex,Age_band,Population
+England,Male,15-19,1807060
+England,Male,20-24,1807051
+England,Male,25-29,1927578
+England,Male,30-34,1994170
+England,Male,35-39,1962237
+England,Male,40-44,1868751
+England,Male,45-49,1705706
+England,Male,50-54,1829873
+England,Male,55-59,1890154
+England,Male,60-64,1742130
+England,Male,65-70,1690793
+England,Male,71+,3351429
+Great Britain,Male,15-19,2060187
+Great Britain,Male,20-24,2077547
+Great Britain,Male,25-29,2198352
+Great Britain,Male,30-34,2272718
+Great Britain,Male,35-39,2240110
+Great Britain,Male,40-44,2134126
+Great Britain,Male,45-49,1947570
+Great Britain,Male,50-54,2103465
+Great Britain,Male,55-59,2192908
+Great Britain,Male,60-64,2035087
+Great Britain,Male,65-70,1986420
+Great Britain,Male,71+,3896318
+England,Female,15-19,1702095
+England,Female,20-24,1718967
+England,Female,25-29,1957993
+England,Female,30-34,2106974
+England,Female,35-39,2111221
+England,Female,40-44,1986529
+England,Female,45-49,1774061
+England,Female,50-54,1898925
+England,Female,55-59,1971186
+England,Female,60-64,1820649
+England,Female,65-70,1797494
+England,Female,71+,4141376
+Great Britain,Female,15-19,1942768
+Great Britain,Female,20-24,1985072
+Great Britain,Female,25-29,2234729
+Great Britain,Female,30-34,2400578
+Great Britain,Female,35-39,2404924
+Great Britain,Female,40-44,2266802
+Great Britain,Female,45-49,2027868
+Great Britain,Female,50-54,2191613
+Great Britain,Female,55-59,2293561
+Great Britain,Female,60-64,2131899
+Great Britain,Female,65-70,2114934
+Great Britain,Female,71+,4814800
