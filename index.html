@@ -160,7 +160,7 @@
     <p class="kicker">NHS England · Data Analysis</p>
     <h1>The amphetamine epidemic:<br>ADHD prescribing in England</h1>
     <p class="standfirst">The number of children and adults receiving stimulant medication for ADHD has risen dramatically over the past decade. NHS data reveal who is being prescribed, where, and how that picture is changing.</p>
-    <p class="byline"><strong>Adam Chidlow</strong> &nbsp;·&nbsp; Data: NHS Business Services Authority; Office for National Statistics &nbsp;·&nbsp; <span id="updated-date"></span></p>
+    <p class="byline"><strong>Adam Chidlow</strong> &nbsp;·&nbsp; Data: NHS Business Services Authority; NHS England Digital Data; Office for National Statistics &nbsp;·&nbsp; <span id="updated-date"></span></p>
   </div>
 </header>
 
@@ -204,10 +204,11 @@
 </div>
 
 <div class="chart-block" id="scatter-block">
-  <h2 class="chart-title">Scatter: % change vs per 100,000 <span style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:400;color:var(--ink-light);">— analytical view, remove before publishing</span></h2>
-  <p class="chart-deck">Each dot is an ICB. Red dots have the highest rank divergence between the two metrics — ICBs that look very different depending on which measure you use.</p>
+  <h2 class="chart-title">Where talking therapy is hardest to access, ADHD prescribing has grown fastest</h2>
+  <p class="chart-deck">Each dot is one of England's 42 Integrated Care Boards, plotted against their NHS Talking Therapies 6-week access rate and five-year growth in ADHD prescribing. Red dots are the top and bottom 5 ICBs by prescription growth.</p>
   <canvas id="chart-scatter" height="440"></canvas>
-  <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health; ONS Mid-year Population Estimates</p>
+  <p id="scatter-note" class="chart-source"></p>
+  <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health; NHS Talking Therapies Monthly Statistics, NHS England Digital; ONS Mid-year Population Estimates</p>
 </div>
 
 </main>
@@ -220,7 +221,7 @@
 
 <script>
 // ── UPDATE THIS PATH ──────────────────────────────────────────────────────────
-const DATA_DIR = './data/nhsbsa_processed/';
+const DATA_DIR = '../Data/nhsbsa_processed/';
 
 document.getElementById('updated-date').textContent =
   new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
@@ -571,6 +572,7 @@ async function buildRegionalCharts() {
   try {
     const rawPct = await loadCSV('nhsbsa_regional_annual.csv');
     const rawStd = await loadCSV('nhsbsa_regional_standardised.csv');
+    const rawScatter = await loadCSV('scatter_data.csv');
 
     const years    = [...new Set(rawPct.map(r => r.financial_year))].sort();
     const baseline = years[0];
@@ -771,29 +773,53 @@ async function buildRegionalCharts() {
 
     buildBarChart('pct');
 
-    // ── Standalone scatter ───────────────────────────────────────────────
-    const scatterData = allData.map(d => ({
-      x: d.per100k, y: d.pct, label: d.icb,
-      pct_rank: d.pct_rank, per100k_rank: d.per100k_rank,
-      divergence: d.divergence,
-    }));
+// ── Bubble chart: 5yr Rx growth vs Talking Therapies access + volume ────
+    const scatterData = rawScatter
+      .filter(r => r.patients_growth_pct_5yr != null &&
+                   r.mean_6wk_pct != null &&
+                   r.accessing_per_100k != null)
+      .map(r => ({
+        x:         +r.mean_6wk_pct,
+        y:         +r.patients_growth_pct_5yr,
+        volume:    +r.accessing_per_100k,
+        label:     r.icb_label,
+        growth10:  +r.patients_growth_pct_10yr,
+      }));
 
-    const topDivergers = new Set(
-      [...allData].sort((a,b) => b.divergence - a.divergence).slice(0,5).map(d => d.icb)
-    );
-    by100k.slice(0,3).forEach(d => topDivergers.add(d.icb));
-    byPct.slice(0,3).forEach(d  => topDivergers.add(d.icb));
+    const sn = scatterData.length;
 
-    const meanX     = scatterData.reduce((s,p) => s+p.x, 0) / n;
-    const meanY     = scatterData.reduce((s,p) => s+p.y, 0) / n;
-    const slope     = scatterData.reduce((s,p) => s+(p.x-meanX)*(p.y-meanY), 0) /
-                      scatterData.reduce((s,p) => s+(p.x-meanX)**2, 0);
-    const intercept = meanY - slope * meanX;
-    const xMin      = Math.min(...scatterData.map(p=>p.x));
-    const xMax      = Math.max(...scatterData.map(p=>p.x));
+    // Normalise accessing_per_100k to bubble radius 4–18px
+    const volMin = Math.min(...scatterData.map(d => d.volume));
+    const volMax = Math.max(...scatterData.map(d => d.volume));
+    const R_MIN = 4, R_MAX = 18;
+    scatterData.forEach(d => {
+      d.r = R_MIN + (d.volume - volMin) / (volMax - volMin) * (R_MAX - R_MIN);
+    });
 
-    const labelPlugin = {
-      id: 'scatterLabels',
+    // Top 5 and bottom 5 by 5yr growth
+    const byGrowth5   = [...scatterData].sort((a, b) => b.y - a.y);
+    const highlighted = new Set([
+      ...byGrowth5.slice(0, 5).map(d => d.label),
+      ...byGrowth5.slice(-5).map(d => d.label),
+    ]);
+
+    // Regression line (on x/y only, ignore r)
+    const sMeanX     = scatterData.reduce((s, p) => s + p.x, 0) / sn;
+    const sMeanY     = scatterData.reduce((s, p) => s + p.y, 0) / sn;
+    const sSlope     = scatterData.reduce((s, p) => s + (p.x - sMeanX) * (p.y - sMeanY), 0) /
+                       scatterData.reduce((s, p) => s + (p.x - sMeanX) ** 2, 0);
+    const sIntercept = sMeanY - sSlope * sMeanX;
+    const sXMin      = Math.min(...scatterData.map(p => p.x));
+    const sXMax      = Math.max(...scatterData.map(p => p.x));
+
+    // Pearson r
+    const ssX  = scatterData.reduce((s, p) => s + (p.x - sMeanX) ** 2, 0);
+    const ssY  = scatterData.reduce((s, p) => s + (p.y - sMeanY) ** 2, 0);
+    const ssXY = scatterData.reduce((s, p) => s + (p.x - sMeanX) * (p.y - sMeanY), 0);
+    const pearsonR = (ssXY / Math.sqrt(ssX * ssY)).toFixed(2);
+
+    const bubbleLabelPlugin = {
+      id: 'bubbleLabels',
       afterDatasetsDraw(ch) {
         const c    = ch.ctx;
         const meta = ch.getDatasetMeta(0);
@@ -802,35 +828,41 @@ async function buildRegionalCharts() {
         c.fillStyle    = '#3d3d3d';
         c.textBaseline = 'bottom';
         meta.data.forEach((el, i) => {
-          if (!topDivergers.has(scatterData[i].label)) return;
-          const {x, y} = el.getProps(['x','y']);
-          c.fillText(scatterData[i].label, x+6, y-2);
+          if (!highlighted.has(scatterData[i].label)) return;
+          const { x, y } = el.getProps(['x', 'y']);
+          const offset = scatterData[i].r + 3;
+          c.fillText(scatterData[i].label, x + offset, y - 2);
         });
         c.restore();
       }
     };
 
     new Chart(document.getElementById('chart-scatter'), {
-      type: 'scatter',
-      plugins: [labelPlugin],
+      type: 'bubble',
+      plugins: [bubbleLabelPlugin],
       data: {
         datasets: [
           {
             label: 'ICB',
             data: scatterData,
-            backgroundColor: scatterData.map(d => topDivergers.has(d.label) ? RED+'dd' : BLUE+'55'),
-            borderColor:     scatterData.map(d => topDivergers.has(d.label) ? RED : BLUE),
+            backgroundColor: scatterData.map(d =>
+              highlighted.has(d.label) ? RED + 'cc' : BLUE + '44'),
+            borderColor: scatterData.map(d =>
+              highlighted.has(d.label) ? RED : BLUE),
             borderWidth: 1,
-            pointRadius:      scatterData.map(d => topDivergers.has(d.label) ? 6 : 4),
-            pointHoverRadius: 7,
+            hoverBorderWidth: 2,
           },
           {
+            // Trend line rendered as scatter with line
             label: 'Trend',
-            data: [{x:xMin, y:slope*xMin+intercept}, {x:xMax, y:slope*xMax+intercept}],
             type: 'line',
-            borderColor: CHARCOAL+'55',
+            data: [
+              { x: sXMin, y: sSlope * sXMin + sIntercept },
+              { x: sXMax, y: sSlope * sXMax + sIntercept },
+            ],
+            borderColor: CHARCOAL + '55',
             borderWidth: 1.5,
-            borderDash: [4,3],
+            borderDash: [4, 3],
             pointRadius: 0,
             fill: false,
           }
@@ -845,20 +877,32 @@ async function buildRegionalCharts() {
             callbacks: {
               title: ctx => ctx[0].raw.label,
               label: ctx => [
-                ` Per 100,000: ${ctx.raw.x.toFixed(1)} (rank #${ctx.raw.per100k_rank})`,
-                ` % change: +${ctx.raw.y}% (rank #${ctx.raw.pct_rank})`,
-                ` Rank divergence: ${ctx.raw.divergence}`
+                ` 6-week access rate: ${ctx.raw.x.toFixed(1)}%`,
+                ` 5-year Rx growth: +${ctx.raw.y.toFixed(0)}%`,
+                ` 10-year Rx growth: +${ctx.raw.growth10.toFixed(0)}%`,
+                ` Talking Therapies throughput: ${ctx.raw.volume.toFixed(0)} per 100,000`,
               ]
             }
           }
         },
         scales: {
-          x: { ...axisOpts(`Patients per 100,000 (${latest})`),  ticks:{padding:8} },
-          y: { ...axisOpts(`% change, ${baseline} → ${latest}`), ticks:{callback: v=>'+'+v+'%', padding:8} }
+          x: {
+            ...axisOpts('Talking Therapies 6-week access rate, 2024/25 (%)'),
+            ticks: { padding: 8 }
+          },
+          y: {
+            ...axisOpts('ADHD prescription growth, 2019/20 → 2024/25 (%)'),
+            ticks: { callback: v => '+' + v + '%', padding: 8 }
+          }
         }
       }
     });
 
+    document.getElementById('scatter-note').textContent =
+      `Each bubble is one of England's 42 Integrated Care Boards. Bubble size reflects ` +
+      `NHS Talking Therapies throughput (people accessing per 100,000 population). ` +
+      `Highlighted in red: top 5 and bottom 5 ICBs by 5-year prescription growth. ` +
+      `Trend line r\u2009=\u2009${pearsonR}.`;
   } catch(e) {
     showError('chart-regional', e.message);
     showError('chart-scatter',  e.message);
