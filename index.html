@@ -370,7 +370,7 @@ async function buildYoYChart() {
 async function buildDrugsChart() {
   try {
     const raw   = await loadCSV('nhsbsa_drug_breakdown_monthly.csv');
-    const drugs = [...new Set(raw.map(r => r.drug))].sort();
+    const drugs = ['methylphenidate', 'lisdexamfetamine', 'atomoxetine', 'dexamfetamine'];
     const dates = [...new Set(raw.map(r => r.date))].sort();
     const sampled = dates.filter((_, i) => i % 3 === 0);
 
