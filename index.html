@@ -88,6 +88,9 @@
     padding-top: 1.5rem;
     border-top: 1px solid var(--rule);
   }
+  .chart-block:first-child {
+    border-top: none;
+  }
 
   .chart-title {
     font-family: 'Playfair Display', serif;
@@ -197,7 +200,7 @@
 
 <div class="chart-block">
   <h2 class="chart-title">Prescribing rates vary dramatically by region</h2>
-  <p class="chart-deck">Some areas have seen ADHD prescribing more than triple since 2015/16 while others have grown far more slowly. Toggle between growth rate and population-standardised totals. Hover to see both.</p>
+  <p class="chart-deck">Some areas have seen ADHD prescribing more than triple since 2015/16 while others have grown far more slowly. Toggle between ten-year growth rates for the top and bottom five ICBs, and population-standardised prescription totals for 2024/5. Hover to see both.</p>
   <canvas id="chart-regional" height="560"></canvas>
   <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health; ONS Mid-year Population Estimates</p>
   <p class="chart-note" id="regional-note"></p>
@@ -205,7 +208,7 @@
 
 <div class="chart-block" id="scatter-block">
   <h2 class="chart-title">Where therapy is hardest to access, ADHD prescribing has grown fastest</h2>
-  <p class="chart-deck">Each spot is one of England's 42 Integrated Care Boards, plotted against their NHS Talking Therapies six-week access rate and five-year growth in ADHD prescribing. Red spots are the top and bottom 5 ICBs by five-year prescription growth. Spot size reflects talking therapies throughput per 100,000. Trend line: r = -0.34.</p>
+  <p class="chart-deck">Each spot is one of England's 42 Integrated Care Boards, plotted against their NHS Talking Therapies six-week access rate and five-year growth in ADHD prescribing. Red spots are the top and bottom five ICBs by five-year prescription growth. Spot size reflects talking therapies throughput per 100,000. Trend line: r = -0.34.</p>
   <canvas id="chart-scatter" height="440"></canvas>
   <p id="scatter-note" class="chart-source"></p>
   <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health; NHS Talking Therapies Monthly Statistics, NHS England Digital; ONS Mid-year Population Estimates</p>
@@ -745,13 +748,11 @@ async function buildRegionalCharts() {
         const bottom = byPct[byPct.length - 1];
         document.getElementById('regional-note').textContent =
           `Showing top 5 and bottom 5 ICBs by % change (${baseline} → ${latest}). ` +
-          `Highest: ${top.icb} (+${top.pct}%). Lowest: ${bottom.icb} (+${bottom.pct}%). ` +
-          `Hover shows both metrics.`;
+          `Highest: ${top.icb} (+${top.pct}%). Lowest: ${bottom.icb} (+${bottom.pct}%). `;
       } else {
         const medianVal = by100k[Math.floor(by100k.length / 2)].per100k;
         document.getElementById('regional-note').textContent =
-          `All ${n} ICBs sorted by rate. Median: ${medianVal.toFixed(1)} per 100,000. ` +
-          `Hover shows both metrics.`;
+          `All ${n} ICBs sorted by rate. Median: ${medianVal.toFixed(1)} per 100,000. `;
       }
     }
 
@@ -837,9 +838,9 @@ const bubbleLabelPlugin = {
       'North Central London':                                [  10,  16],
       'Norfolk And Waveney':                                 [ -80, -20],
       'Kent And Medway':                                     [ -95, -5],
-      'Northamptonshire':                                    [ 10,  10],
+      'Northamptonshire':                                    [ 5, 5],
       'North East And North Cumbria':                        [ -100,  16],
-      'Herefordshire And Worcestershire':                    [ -125, -10],
+      'Herefordshire And Worcestershire':                    [ -125, -5],
     };
 
     meta.data.forEach((el, i) => {
