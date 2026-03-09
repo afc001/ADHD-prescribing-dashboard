@@ -171,7 +171,7 @@
 
   <div class="chart-block">
     <h2 class="chart-title">Amphetamine-class drugs are now mainstream NHS medication</h2>
-    <p class="chart-deck">Monthly items dispensed by drug type. Methylphenidate has long dominated, but lisdexamfetamine, a direct amphetamine derivative, has grown faster than any other ADHD drug since its UK approval. Total stimulant prescriptions now exceed 300,000 items per month.</p>
+    <p class="chart-deck">Monthly items dispensed by drug type. Methylphenidate has long dominated, but lisdexamfetamine, a direct amphetamine derivative, has grown faster than any other ADHD drug since its UK approval. Total ADHD prescriptions now exceed 250,000 items per month.</p>
     <canvas id="chart-drugs" height="300"></canvas>
     <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health, monthly chemical substance data</p>
   </div>
@@ -195,20 +195,20 @@
   <p class="chart-deck">Male patients aged 10–14 remain the single largest group by far, but the fastest growth is among women aged 30–34. Toggle between five-year growth and 2025 patient numbers.</p>
   <canvas id="chart-age" height="380"></canvas>
   <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health, Age Band and Gender tab</p>
-  <p class="chart-note">Notes: patient counts from age/gender cross-tabulation may slightly overestimate totals — see NHSBSA methodology. Data for patients at 80+ years old excluded due to small sample size.</p>
+  <p class="chart-note">Notes: patient counts from age/gender cross-tabulation may slightly overestimate totals — see NHSBSA methodology. Data for patients under 5 and over 80 years old excluded due to small sample size.</p>
 </div>
 
 <div class="chart-block">
   <h2 class="chart-title">Prescribing rates vary dramatically by region</h2>
-  <p class="chart-deck">Some areas have seen ADHD prescribing more than triple since 2015/16 while others have grown far more slowly. Toggle between ten-year growth rates for the top and bottom five ICBs, and population-standardised prescription totals for 2024/5. Hover to see both.</p>
+  <p class="chart-deck">Some areas have seen ADHD prescribing more than triple since 2015/16 while others have grown far more slowly. Toggle between ten-year growth rates for the top and bottom five Integrated Care Boards, and population-standardised prescription totals across all English ICBs for 2024/5. Hover to see both.</p>
   <canvas id="chart-regional" height="560"></canvas>
   <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health; ONS Mid-year Population Estimates</p>
   <p class="chart-note" id="regional-note"></p>
 </div>
 
 <div class="chart-block" id="scatter-block">
-  <h2 class="chart-title">Where therapy is hardest to access, ADHD prescribing has grown fastest</h2>
-  <p class="chart-deck">Each spot is one of England's 42 Integrated Care Boards, plotted against their NHS Talking Therapies six-week access rate and five-year growth in ADHD prescribing. Red spots are the top and bottom five ICBs by five-year prescription growth. Spot size reflects talking therapies throughput per 100,000. Trend line: r = -0.34.</p>
+  <h2 class="chart-title">Where therapy is hardest to access, prescribing has grown fastest</h2>
+  <p class="chart-deck">ADHD drugs may be covering for inadequate NHS therapy access in the worst-served regions. Each spot is one of England's 42 Integrated Care Boards, plotted against their NHS Talking Therapies six-week access rate and five-year growth in ADHD prescribing. Red spots are the top and bottom five ICBs by five-year prescription growth. Spot size reflects talking therapies throughput per 100,000. Trend line: r = -0.335.</p>
   <canvas id="chart-scatter" height="440"></canvas>
   <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health; NHS Talking Therapies Monthly Statistics, NHS England Digital; ONS Mid-year Population Estimates</p>
 </div>
@@ -218,7 +218,6 @@
 <footer>
   <p><strong>Data:</strong> NHS Business Services Authority, <em>Medicines Used in Mental Health, England 2015/16–2024/25</em>, CNS Stimulants and Drugs Used for ADHD summary tables; Office for National Statistics, <em>Health geographies population estimates, Mid-2011 to mid-2022: Integrated Care Boards, 2024 geography edition</em> and <em>Mid-2022 revised (Nov 2024) to mid-2024: Integrated Care Boards, 2024 geography edition</em> Used for regional population standardisation</p>
   <p><strong>Notes:</strong> Figures relate to identified patients only unless otherwise stated. The 15–19 age band straddles the children/adult threshold. Regional percentage changes calculated from 2015/16 baseline.</p>
-  <p>Analysis: Adam Chidlow</p>
 </footer>
 
 <script>
