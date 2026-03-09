@@ -158,8 +158,8 @@
 <header class="masthead">
   <div class="masthead-inner">
     <p class="kicker">NHS England · Data Analysis</p>
-    <h1>The amphetamine epidemic:<br>ADHD prescribing in England</h1>
-    <p class="standfirst">The number of children and adults receiving stimulant medication for ADHD has risen dramatically over the past decade. NHS data reveal who is being prescribed, where, and how that picture is changing.</p>
+    <h1>The amphetamine epidemic:<br>ADHD prescribing in England, 2015-2025</h1>
+    <p class="standfirst">The number of children and adults receiving medication for ADHD has risen dramatically over the past decade. NHS data reveal who is being prescribed stimulants, where, and how the picture is changing.</p>
     <p class="byline"><strong>Adam Chidlow</strong> &nbsp;·&nbsp; Data: NHS Business Services Authority; NHS England Digital Data; Office for National Statistics &nbsp;·&nbsp; <span id="updated-date"></span></p>
   </div>
 </header>
@@ -167,29 +167,29 @@
 <main class="content">
 
   <div class="chart-block">
+    <h2 class="chart-title">Amphetamine-class drugs are now mainstream NHS medication</h2>
+    <p class="chart-deck">Monthly items dispensed by drug type. Methylphenidate has long dominated, but lisdexamfetamine, a direct amphetamine derivative, has grown faster than any other ADHD drug since its UK approval. Total stimulant prescriptions now exceed 300,000 items per month.</p>
+    <canvas id="chart-drugs" height="300"></canvas>
+    <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health, monthly chemical substance data</p>
+  </div>
+
+  <div class="chart-block">
     <h2 class="chart-title">For the first time, more adults than children are being prescribed ADHD drugs</h2>
-    <p class="chart-deck">Identified patients receiving CNS stimulants in England by financial year. Adults first outnumbered children in 2022/23, and the gap has widened every year since.</p>
+    <p class="chart-deck">Identified patients receiving CNS stimulants in England by financial year. Adults first outnumbered children in 2022/23. The gap has widened every year since.</p>
     <canvas id="chart-trend" height="300"></canvas>
     <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health, 2015/16–2024/25</p>
   </div>
 
   <div class="chart-block">
     <h2 class="chart-title">Covid hit children's prescriptions hard, while adults' barely paused</h2>
-    <p class="chart-deck">Year-on-year growth rate by age group (identified patients only, 17 and under; 18 and over). Children's prescribing fell sharply in 2020/21 and has never fully recovered its pre-pandemic trajectory. Adult prescribing dipped briefly then surged, and still sustains 25% year-on-year growth.</p>
+    <p class="chart-deck">Growth rate of stimulant prescriptions for ADHD by age group (identified patients only, ages 17 and under; 18 and over). Children's prescribing has never fully recovered its pre-pandemic trajectory while adult prescribing still sustains 25% year-on-year growth.</p>
     <canvas id="chart-yoy" height="260"></canvas>
     <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health, 2015/16–2024/25</p>
   </div>
 
-  <div class="chart-block">
-    <h2 class="chart-title">Amphetamine-class drugs are now mainstream NHS medication</h2>
-    <p class="chart-deck">Monthly items dispensed by drug type. Methylphenidate (a stimulant related to amphetamine) has long dominated, but lisdexamfetamine, a true amphetamine prodrug, has grown faster than any other ADHD drug since its UK approval. Total stimulant prescriptions are now over 300,000 items per month.</p>
-    <canvas id="chart-drugs" height="300"></canvas>
-    <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health, monthly chemical substance data</p>
-  </div>
-
 <div class="chart-block">
   <h2 class="chart-title">Women in their thirties are the fastest-growing age group, but teenage boys remain the largest</h2>
-  <p class="chart-deck">Male patients aged 10–14 remain the single largest group by far, reflecting decades of ADHD being diagnosed predominantly in boys, but the fastest growth is among women aged 30–44. Toggle between current patient numbers and five-year growth.</p>
+  <p class="chart-deck">Male patients aged 10–14 remain the single largest group by far, but the fastest growth is among women aged 30–34. Toggle between five-year growth and 2025 patient numbers.</p>
   <canvas id="chart-age" height="380"></canvas>
   <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health, Age Band and Gender tab</p>
   <p class="chart-note">Notes: patient counts from age/gender cross-tabulation may slightly overestimate totals — see NHSBSA methodology. Data for patients at 80+ years old excluded due to small sample size.</p>
@@ -204,8 +204,8 @@
 </div>
 
 <div class="chart-block" id="scatter-block">
-  <h2 class="chart-title">Where talking therapy is hardest to access, ADHD prescribing has grown fastest</h2>
-  <p class="chart-deck">Each dot is one of England's 42 Integrated Care Boards, plotted against their NHS Talking Therapies 6-week access rate and five-year growth in ADHD prescribing. Red dots are the top and bottom 5 ICBs by prescription growth.</p>
+  <h2 class="chart-title">Where therapy is hardest to access, ADHD prescribing has grown fastest</h2>
+  <p class="chart-deck">Each spot is one of England's 42 Integrated Care Boards, plotted against their NHS Talking Therapies 6-week access rate and five-year growth in ADHD prescribing. Red spots are the top and bottom 5 ICBs by prescription growth. Spot size reflects population-standardised talking therapies throughput</p>
   <canvas id="chart-scatter" height="440"></canvas>
   <p id="scatter-note" class="chart-source"></p>
   <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health; NHS Talking Therapies Monthly Statistics, NHS England Digital; ONS Mid-year Population Estimates</p>
