@@ -818,24 +818,41 @@ async function buildRegionalCharts() {
     const ssXY = scatterData.reduce((s, p) => s + (p.x - sMeanX) * (p.y - sMeanY), 0);
     const pearsonR = (ssXY / Math.sqrt(ssX * ssY)).toFixed(2);
 
-    const bubbleLabelPlugin = {
-      id: 'bubbleLabels',
-      afterDatasetsDraw(ch) {
-        const c    = ch.ctx;
-        const meta = ch.getDatasetMeta(0);
-        c.save();
-        c.font         = "11px 'DM Sans',sans-serif";
-        c.fillStyle    = '#3d3d3d';
-        c.textBaseline = 'bottom';
-        meta.data.forEach((el, i) => {
-          if (!highlighted.has(scatterData[i].label)) return;
-          const { x, y } = el.getProps(['x', 'y']);
-          const offset = scatterData[i].r + 3;
-          c.fillText(scatterData[i].label, x + offset, y - 2);
-        });
-        c.restore();
-      }
+const bubbleLabelPlugin = {
+  id: 'bubbleLabels',
+  afterDatasetsDraw(ch) {
+    const c    = ch.ctx;
+    const meta = ch.getDatasetMeta(0);
+    c.save();
+    c.font         = "11px 'DM Sans',sans-serif";
+    c.fillStyle    = '#3d3d3d';
+
+    // Manual offsets [dx, dy] for each highlighted label.
+    // Tweak these values until labels sit clearly without overlapping.
+    const offsets = {
+      'Shropshire, Telford And Wrekin':                      [-170, -12],
+      'Staffordshire And Stoke-On-Trent':                    [  10, -12],
+      'Cornwall And The Isles Of Scilly':                    [  10,  16],
+      'Bristol, North Somerset And South Gloucestershire':   [  10, -12],
+      'North Central London':                                [  10,  16],
+      'Norfolk And Waveney':                                 [  10, -12],
+      'Kent And Medway':                                     [  10,  16],
+      'Northamptonshire':                                    [-10, -10],
+      'North East And North Cumbria':                        [-165, -12],
+      'Lancashire And South Cumbria':                        [  10,  16],
     };
+
+    meta.data.forEach((el, i) => {
+      const d = scatterData[i];
+      if (!highlighted.has(d.label)) return;
+      const { x, y } = el.getProps(['x', 'y']);
+      const [dx, dy] = offsets[d.label] || [d.r + 3, -2];
+      c.textBaseline = dy < 0 ? 'bottom' : 'top';
+      c.fillText(d.label, x + dx, y + dy);
+    });
+    c.restore();
+  }
+};
 
     new Chart(document.getElementById('chart-scatter'), {
       type: 'bubble',
