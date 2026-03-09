@@ -208,7 +208,7 @@
 
 <div class="chart-block" id="scatter-block">
   <h2 class="chart-title">Where therapy is hardest to access, prescribing has grown fastest</h2>
-  <p class="chart-deck">ADHD drugs may be covering for inadequate NHS therapy access in the worst-served regions. Each spot is one of England's 42 Integrated Care Boards, plotted against their NHS Talking Therapies six-week access rate and five-year growth in ADHD prescribing. Red spots are the top and bottom five ICBs by five-year prescription growth. Spot size reflects talking therapies throughput per 100,000. Trend line: r = -0.335.</p>
+  <p class="chart-deck">ADHD drugs may be covering for inadequate NHS therapy access in the worst-served regions. Each spot is one of England's 42 Integrated Care Boards, plotted against their talking therapy six-week access rate and five-year growth in ADHD prescribing. Red spots are the top and bottom five ICBs by five-year prescription growth. Spot size reflects talking therapy throughput per 100k. Trend line: r = -0.335.</p>
   <canvas id="chart-scatter" height="440"></canvas>
   <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health; NHS Talking Therapies Monthly Statistics, NHS England Digital; ONS Mid-year Population Estimates</p>
 </div>
@@ -904,6 +904,7 @@ const bubbleLabelPlugin = {
         scales: {
           x: {
             ...axisOpts('Talking Therapies 6-week access rate, 2024/25 (%)'),
+            min: 47,
             ticks: { padding: 8 }
           },
           y: {
