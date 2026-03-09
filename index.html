@@ -205,7 +205,7 @@
 
 <div class="chart-block" id="scatter-block">
   <h2 class="chart-title">Where therapy is hardest to access, ADHD prescribing has grown fastest</h2>
-  <p class="chart-deck">Each spot is one of England's 42 Integrated Care Boards, plotted against their NHS Talking Therapies 6-week access rate and five-year growth in ADHD prescribing. Red spots are the top and bottom 5 ICBs by prescription growth. Spot size reflects population-standardised talking therapies throughput</p>
+  <p class="chart-deck">Each spot is one of England's 42 Integrated Care Boards, plotted against their NHS Talking Therapies six-week access rate and five-year growth in ADHD prescribing. Red spots are the top and bottom 5 ICBs by five-year prescription growth. Spot size reflects talking therapies throughput per 100,000. Trend line: r = -0.34.</p>
   <canvas id="chart-scatter" height="440"></canvas>
   <p id="scatter-note" class="chart-source"></p>
   <p class="chart-source">Source: NHSBSA Medicines Used in Mental Health; NHS Talking Therapies Monthly Statistics, NHS England Digital; ONS Mid-year Population Estimates</p>
@@ -913,13 +913,7 @@ const bubbleLabelPlugin = {
           }
         }
       }
-    });
-
-    document.getElementById('scatter-note').textContent =
-      `Each bubble is one of England's 42 Integrated Care Boards. Bubble size reflects ` +
-      `NHS Talking Therapies throughput (people accessing per 100,000 population). ` +
-      `Highlighted in red: top 5 and bottom 5 ICBs by 5-year prescription growth. ` +
-      `Trend line r\u2009=\u2009${pearsonR}.`;
+https://afc001.github.io/ADHD-prescribing-dashboard/    });
   } catch(e) {
     showError('chart-regional', e.message);
     showError('chart-scatter',  e.message);
